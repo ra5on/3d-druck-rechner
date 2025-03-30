@@ -4,23 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>3D-Druck Preisrechner</title>
-  <!-- CSS-Datei einbinden -->
+  <!-- CSS einbinden -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
+    <!-- Theme-Umschalter -->
     <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
-
+    
     <h1>3D-Druck Preisrechner</h1>
 
+    <!-- Formular zum Anlegen der Platten -->
     <form id="setupForm">
       <label for="numPlates">Anzahl der Druckplatten:</label>
       <input type="number" id="numPlates" name="numPlates" value="1" min="1" />
       <button type="button" id="createPlatesBtn">Platten erstellen</button>
     </form>
 
+    <!-- Hier werden die einzelnen Platten-Felder angelegt -->
     <form id="platesForm"></form>
 
+    <!-- Globale Faktoren -->
     <form id="globalForm">
       <fieldset>
         <legend>Globale Faktoren</legend>
@@ -51,12 +55,16 @@
       </fieldset>
     </form>
 
+    <!-- Button zur Preisberechnung -->
     <button type="button" id="calcBtn">Gesamtpreis berechnen</button>
 
+    <!-- Ergebnisbereich -->
     <div id="result"></div>
-  </div> <!-- Ende container -->
+  </div> <!-- Ende .container -->
 
+  <!-- Inline-JavaScript -->
   <script>
+    /* Theme umschalten und speichern */
     function toggleTheme() {
       const body = document.body;
       if (body.classList.contains('dark-mode')) {
@@ -68,10 +76,12 @@
       }
     }
 
+    /* Gewinnmarge per Klick auf Radio-Button setzen */
     function setGewinnmarge(wert) {
       document.getElementById("gewinnmarge").value = wert;
     }
 
+    /* Beim Laden Theme aus LocalStorage wiederherstellen */
     window.onload = function () {
       const savedTheme = localStorage.getItem('theme') || 'light';
       if (savedTheme === 'dark') {
@@ -79,6 +89,7 @@
       }
     };
 
+    /* Button "Platten erstellen" -> Dynamische Felder anlegen */
     document.getElementById("createPlatesBtn").addEventListener("click", function () {
       const platesForm = document.getElementById("platesForm");
       platesForm.innerHTML = "";
@@ -93,26 +104,22 @@
         const fieldset = document.createElement("fieldset");
         fieldset.innerHTML = `
           <legend>Druckplatte ${i}</legend>
-
           <label for="druckzeitStunden${i}">Druckzeit (Stunden):</label>
-          <input type="number" id="druckzeitStunden${i}" name="druckzeitStunden${i}" value="0" min="0" />
-
+          <input type="number" id="druckzeitStunden${i}" name="druckzeitStunden${i}" value="0" min="0">
           <label for="druckzeitMin_${i}">Druckzeit (Minuten):</label>
-          <input type="number" id="druckzeitMin_${i}" name="druckzeitMin_${i}" value="0" min="0" />
-
+          <input type="number" id="druckzeitMin_${i}" name="druckzeitMin_${i}" value="0" min="0">
           <label for="filament${i}">Filamentverbrauch (Gramm):</label>
-          <input type="number" id="filament${i}" name="filament${i}" value="0" min="0" />
-
+          <input type="number" id="filament${i}" name="filament${i}" value="0" min="0">
           <label for="farbwechsel${i}">Anzahl der Farbwechsel:</label>
-          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0" />
-
+          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0">
           <label for="abfallFarbwechsel${i}">Abfall pro Farbwechsel (Gramm):</label>
-          <input type="number" id="abfallFarbwechsel${i}" name="abfallFarbwechsel${i}" value="0" min="0" />
+          <input type="number" id="abfallFarbwechsel${i}" name="abfallFarbwechsel${i}" value="0" min="0">
         `;
         platesForm.appendChild(fieldset);
       }
     });
 
+    /* Button "Gesamtpreis berechnen" -> Berechnung ausführen und Tabelle erzeugen */
     document.getElementById("calcBtn").addEventListener("click", function () {
       const numPlates = parseInt(document.getElementById("numPlates").value, 10);
       if (isNaN(numPlates) || numPlates < 1) {
@@ -123,6 +130,7 @@
       let totalMinutes = 0;
       let totalFilament = 0;
 
+      // Werte aus allen Druckplatten holen
       for (let i = 1; i <= numPlates; i++) {
         const hours = parseFloat(document.getElementById("druckzeitStunden" + i).value) || 0;
         const minutes = parseFloat(document.getElementById("druckzeitMin_" + i).value) || 0;
@@ -135,6 +143,7 @@
         totalFilament += filamentUsed + (farbwechsel * abfallProFarbwechsel);
       }
 
+      // Globale Faktoren
       const stromkostenKwh = parseFloat(document.getElementById("stromkostenKwh").value) || 0;
       const filamentCost = parseFloat(document.getElementById("filamentCost").value) || 0;
       const rabattFreunde = parseFloat(document.getElementById("rabattFreunde").value) || 0;
@@ -142,59 +151,58 @@
       const gewinnmarge = parseFloat(document.getElementById("gewinnmarge").value) || 0;
       const wartungskosten = parseFloat(document.getElementById("wartungskosten").value) || 0;
 
+      // Berechnungen
       const totalHours = totalMinutes / 60;
       const stromGesamt = totalHours * stromkostenKwh;
       const filamentGesamt = totalFilament * filamentCost;
       const gesamtVorRabatt = stromGesamt + filamentGesamt;
       const gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
       const wartungGesamt = totalHours * wartungskosten;
-      
-      // Versandkosten werden nach Gewinnmarge addiert
       const kostenVorMarge = gesamtNachRabatt + wartungGesamt;
       const finalPreis = (kostenVorMarge * (1 + (gewinnmarge / 100))) + verpackungVersand;
 
-      // Statt reinen Text zu verwenden, bauen wir eine Tabelle zusammen:
+      // Ergebnis-Tabelle
       const resultHTML = `
         <table class="result-table">
           <tr>
-            <th>Gesamt-Druckzeit</th>
-            <td>${totalHours.toFixed(2)} Stunden</td>
+            <td class="result-label">Gesamt-Druckzeit</td>
+            <td class="result-value">${totalHours.toFixed(2)} Stunden</td>
           </tr>
           <tr>
-            <th>Filamentverbrauch (inkl. Abfall)</th>
-            <td>${totalFilament.toFixed(2)} g</td>
+            <td class="result-label">Filamentverbrauch (inkl. Abfall)</td>
+            <td class="result-value">${totalFilament.toFixed(2)} g</td>
           </tr>
           <tr>
-            <th>Stromkosten</th>
-            <td>${stromGesamt.toFixed(2)} €</td>
+            <td class="result-label">Stromkosten</td>
+            <td class="result-value">${stromGesamt.toFixed(2)} €</td>
           </tr>
           <tr>
-            <th>Filamentkosten</th>
-            <td>${filamentGesamt.toFixed(2)} €</td>
+            <td class="result-label">Filamentkosten</td>
+            <td class="result-value">${filamentGesamt.toFixed(2)} €</td>
           </tr>
           <tr>
-            <th>Zwischensumme vor Rabatt</th>
-            <td>${gesamtVorRabatt.toFixed(2)} €</td>
+            <td class="result-label">Zwischensumme vor Rabatt</td>
+            <td class="result-value">${gesamtVorRabatt.toFixed(2)} €</td>
           </tr>
           <tr>
-            <th>Nach Rabatt</th>
-            <td>${gesamtNachRabatt.toFixed(2)} €</td>
+            <td class="result-label">Nach Rabatt</td>
+            <td class="result-value">${gesamtNachRabatt.toFixed(2)} €</td>
           </tr>
           <tr>
-            <th>Wartungskosten</th>
-            <td>${wartungGesamt.toFixed(2)} €</td>
+            <td class="result-label">Wartungskosten</td>
+            <td class="result-value">${wartungGesamt.toFixed(2)} €</td>
           </tr>
           <tr>
-            <th>Verpackung &amp; Versand</th>
-            <td>${verpackungVersand.toFixed(2)} €</td>
+            <td class="result-label">Verpackung &amp; Versand</td>
+            <td class="result-value">${verpackungVersand.toFixed(2)} €</td>
           </tr>
           <tr>
-            <th>Kosten vor Marge</th>
-            <td>${kostenVorMarge.toFixed(2)} €</td>
+            <td class="result-label">Kosten vor Marge</td>
+            <td class="result-value">${kostenVorMarge.toFixed(2)} €</td>
           </tr>
-          <tr>
-            <th>Endpreis (mit ${gewinnmarge.toFixed(2)}% Gewinnmarge)</th>
-            <td>${finalPreis.toFixed(2)} €</td>
+          <tr class="result-final">
+            <td class="result-label">Endpreis (mit ${gewinnmarge.toFixed(2)}% Gewinnmarge)</td>
+            <td class="result-value">${finalPreis.toFixed(2)} €</td>
           </tr>
         </table>
       `;
