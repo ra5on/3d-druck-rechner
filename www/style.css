@@ -1,0 +1,93 @@
+/* style.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: background-color 0.3s, color 0.3s;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+form {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+fieldset {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+legend {
+  font-weight: bold;
+  padding: 0 10px;
+}
+label {
+  display: block;
+  margin-top: 10px;
+}
+input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s, color 0.3s;
+}
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  cursor: pointer;
+}
+#result {
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+  white-space: pre-line;
+}
+
+/* Darkmode-Styles mit verbessertem Kontrast */
+.dark-mode {
+  background-color: #222222; /* Etwas hellerer Hintergrund */
+  color: #ffffff;            /* Reines Weiß für den Text */
+  transition: background-color 0.3s, color 0.3s;
+}
+.light-mode {
+  background-color: #ffffff;
+  color: #000000;
+}
+.theme-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: none;
+  background: #444;
+  color: white;
+  border-radius: 4px;
+  z-index: 1000;
+}
+.dark-mode input[type="number"] {
+  background-color: #333333; /* Abgehobener als der Body-Hintergrund */
+  color: #ffffff;
+  border: 1px solid #888888; /* Hellere Umrandung für bessere Sichtbarkeit */
+  transition: background-color 0.3s, color 0.3s, border 0.3s;
+}
+.light-mode input[type="number"] {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ccc;
+}
+.dark-mode .theme-toggle {
+  background: #888888;
+  color: #222222;
+}
