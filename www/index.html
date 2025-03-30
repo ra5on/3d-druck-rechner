@@ -13,34 +13,28 @@
       margin-right: auto;
       transition: background-color 0.3s, color 0.3s;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 1rem;
     }
-
     form {
       margin-bottom: 20px;
       padding: 10px;
       border: 1px solid #ccc;
     }
-
     fieldset {
       margin-top: 20px;
       padding: 10px;
       border: 1px solid #ccc;
     }
-
     legend {
       font-weight: bold;
       padding: 0 10px;
     }
-
     label {
       display: block;
       margin-top: 10px;
     }
-
     input[type="number"] {
       width: 100%;
       padding: 5px;
@@ -49,7 +43,6 @@
       border-radius: 4px;
       transition: background-color 0.3s, color 0.3s;
     }
-
     button {
       margin-top: 20px;
       padding: 10px 20px;
@@ -59,7 +52,6 @@
       margin-right: auto;
       cursor: pointer;
     }
-
     #result {
       margin-top: 20px;
       font-weight: bold;
@@ -67,17 +59,14 @@
       text-align: center;
       white-space: pre-line;
     }
-
     .dark-mode {
       background-color: #121212;
       color: #f0f0f0;
     }
-
     .light-mode {
       background-color: #ffffff;
       color: #000000;
     }
-
     .theme-toggle {
       position: fixed;
       top: 10px;
@@ -90,13 +79,11 @@
       border-radius: 4px;
       z-index: 1000;
     }
-
     .dark-mode input[type="number"] {
       background-color: #1e1e1e;
       color: #f0f0f0;
       border: 1px solid #444;
     }
-
     .light-mode input[type="number"] {
       background-color: #ffffff;
       color: #000000;
@@ -244,8 +231,10 @@
       let gesamtVorRabatt = stromGesamt + filamentGesamt;
       let gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
       let wartungGesamt = totalHours * wartungskosten;
-      let kostenOhneMarge = gesamtNachRabatt + verpackungVersand + wartungGesamt;
-      let finalPreis = kostenOhneMarge * (1 + (gewinnmarge / 100));
+      
+      // Versandkosten werden nach Gewinnmarge addiert
+      let kostenVorMarge = gesamtNachRabatt + wartungGesamt;
+      let finalPreis = (kostenVorMarge * (1 + (gewinnmarge / 100))) + verpackungVersand;
 
       const resultText =
         "Gesamt-Druckzeit: " + totalHours.toFixed(2) + " Stunden\n" +
@@ -256,7 +245,7 @@
         "Nach Rabatt: " + gesamtNachRabatt.toFixed(2) + " €\n" +
         "Wartungskosten: " + wartungGesamt.toFixed(2) + " €\n" +
         "Verpackung & Versand: " + verpackungVersand.toFixed(2) + " €\n" +
-        "Kosten vor Marge: " + kostenOhneMarge.toFixed(2) + " €\n" +
+        "Kosten vor Marge: " + kostenVorMarge.toFixed(2) + " €\n" +
         "Endpreis (mit " + gewinnmarge.toFixed(2) + "% Gewinnmarge): " + finalPreis.toFixed(2) + " €";
 
       document.getElementById("result").textContent = resultText;
