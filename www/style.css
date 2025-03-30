@@ -1,47 +1,76 @@
-/* CSS-Variablen für Light- und Darkmode */
+/* ===========================
+   1) CSS-Variablen für Light- und Darkmode
+   =========================== */
 :root {
   --background-color: #ffffff;
   --text-color: #000000;
+
   --input-background: #ffffff;
   --input-text: #000000;
   --input-border: #ccc;
+
   --button-background: #444;
   --button-text: #ffffff;
-  --highlight-bg: #f0f0f0; /* Für Tabellenzeilen, wenn gewünscht */
+
+  /* Farben für die Tabelle */
+  --label-background: #f2f2f2;
+  --value-background: #ffffff;
+
+  /* Endpreis-Zeile */
+  --final-background: #ffeb3b;
+  --final-text-color: #000000;
 }
 
-/* Dark Mode via prefers-color-scheme */
+/* Dark Mode via prefers-color-scheme (automatisch) */
 @media (prefers-color-scheme: dark) {
   :root {
     --background-color: #121212;
     --text-color: #e0e0e0;
+
     --input-background: #1e1e1e;
     --input-text: #e0e0e0;
     --input-border: #333;
+
     --button-background: #333;
     --button-text: #e0e0e0;
-    --highlight-bg: #2a2a2a;
+
+    /* Angepasste Farben für Tabelle im Darkmode */
+    --label-background: #2f2f2f;
+    --value-background: #1e1e1e;
+
+    /* Helleres Gelb, damit es sich stärker abhebt */
+    --final-background: #ffd700;
+    --final-text-color: #000000;
   }
 }
 
-/* Manuelle Darkmode-Klasse */
+/* Manuelle Darkmode-Klasse (override) */
 body.dark-mode {
   --background-color: #121212;
   --text-color: #e0e0e0;
+
   --input-background: #1e1e1e;
   --input-text: #e0e0e0;
   --input-border: #333;
+
   --button-background: #333;
   --button-text: #e0e0e0;
-  --highlight-bg: #2a2a2a;
+
+  --label-background: #2f2f2f;
+  --value-background: #1e1e1e;
+
+  --final-background: #ffd700;
+  --final-text-color: #000000;
 }
 
-/* Basis-Styles für Body und Container */
+/* ===========================
+   2) Basis-Layout
+   =========================== */
 body {
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: Arial, sans-serif;
-  font-size: 18px;     /* Größere Schrift für bessere Lesbarkeit */
+  font-size: 18px;
   line-height: 1.5;
   margin: 0;
   transition: background-color 0.3s, color 0.3s;
@@ -53,55 +82,61 @@ body {
   padding: 1rem;
 }
 
-/* Überschrift */
 h1 {
   text-align: center;
   margin-bottom: 1rem;
 }
 
-/* Formulare, Fieldsets und Labels */
+/* ===========================
+   3) Formulare
+   =========================== */
 form {
   margin-bottom: 20px;
   padding: 10px;
   border: 1px solid #ccc;
 }
+
 fieldset {
   margin-top: 20px;
   padding: 10px;
   border: 1px solid #ccc;
 }
+
 legend {
   font-weight: bold;
   padding: 0 10px;
 }
+
 label {
   display: block;
   margin-top: 10px;
 }
 
-/* Input-Felder (Größe + größere Spin-Buttons) */
+/* Eingabefelder */
 input[type="number"] {
   width: 100%;
-  padding: 8px;  /* Etwas mehr Padding für größere Klickfläche */
+  padding: 8px;
   box-sizing: border-box;
   background-color: var(--input-background);
   color: var(--input-text);
   border: 1px solid var(--input-border);
   border-radius: 4px;
-  font-size: 1rem;  /* Schriftgröße anpassen */
+  font-size: 1rem;
   transition: background-color 0.3s, color 0.3s, border 0.3s;
 }
 
-/* Größere Spin-Buttons (nur WebKit-basierte Browser wie Chrome, Safari) */
+/* Größere Spin-Buttons (nur WebKit-Browser) */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
-  width: 1.5rem;  /* Breite der Pfeile */
-  height: 1.5rem; /* Höhe der Pfeile */
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
-/* Buttons */
+/* ===========================
+   4) Buttons
+   =========================== */
 button {
   margin-top: 20px;
   padding: 10px 20px;
@@ -117,7 +152,7 @@ button {
   transition: background 0.3s, color 0.3s;
 }
 
-/* Theme-Toggle-Button */
+/* Toggle-Button */
 .theme-toggle {
   position: fixed;
   top: 10px;
@@ -131,31 +166,56 @@ button {
   z-index: 1000;
 }
 
-/* Ergebnis-Ausgabe als Tabelle */
-#result {
-  margin-top: 20px;
-  text-align: center;
+/* ===========================
+   5) Tabellarische Ergebnis-Anzeige
+   =========================== */
+.result-table {
+  margin: 2rem auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--input-background);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* Tabellen-Stile für das Ergebnis */
-.result-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0 auto; /* zentriert die Tabelle selbst */
-  max-width: 600px; /* optional, um die Breite zu begrenzen */
+.result-table tr {
+  height: 3rem; /* Einheitliche Zeilenhöhe */
 }
-.result-table th,
+
 .result-table td {
-  border: 1px solid var(--input-border);
-  padding: 0.8rem;
+  padding: 1rem;
   font-size: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--input-border);
 }
-.result-table th {
+
+/* Linke Spalte: Label */
+.result-table td.result-label {
+  background-color: var(--label-background);
+  color: var(--text-color);
   text-align: left;
-  background-color: var(--button-background);
-  color: var(--button-text);
   width: 60%;
 }
-.result-table tr:nth-child(even) td {
-  background-color: var(--highlight-bg);
+
+/* Rechte Spalte: Wert */
+.result-table td.result-value {
+  background-color: var(--value-background);
+  color: var(--text-color);
+  text-align: right;
+  font-weight: bold;
+}
+
+/* Letzte Zeile ohne unteren Rand */
+.result-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Hervorhebung der Endpreis-Zeile */
+.result-table tr.result-final td {
+  background-color: var(--final-background);
+  color: var(--final-text-color);
+  font-size: 1.1rem;
 }
