@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>3D Druck Preisrechner mit Zusatzvariablen</title>
+  <title>3D Druck Preisrechner</title>
   <style>
-    /* Basis CSS für ein sauberes Layout */
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      max-width: 600px;
+      max-width: 800px;
       margin-left: auto;
       margin-right: auto;
     }
     h1, h2 {
       text-align: center;
     }
-    form {
+    form, fieldset {
       margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    legend {
+      font-weight: bold;
     }
     label {
       display: block;
@@ -25,104 +29,97 @@
     }
     input[type="number"] {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
+      padding: 5px;
       box-sizing: border-box;
     }
     button {
-      margin-top: 15px;
       padding: 10px;
-      width: 100%;
       font-size: 16px;
+      display: block;
+      margin: 20px auto;
     }
-    #preisAnzeige {
+    #result {
       font-weight: bold;
-      font-size: 18px;
-      margin-top: 20px;
+      font-size: 20px;
       text-align: center;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h1>3D Druck Preisrechner</h1>
-  <form id="preisForm">
-    <!-- Basispreis pro Druckplatte -->
-    <label for="basisPreis">Basispreis pro Druck (in €):</label>
-    <input type="number" id="basisPreis" name="basisPreis" value="100" step="0.01" min="0">
-    
-    <!-- Anzahl Druckplatten -->
-    <label for="druckplatten">Anzahl Druckplatten:</label>
-    <input type="number" id="druckplatten" name="druckplatten" value="1" min="1">
-    
-    <!-- Druckzeit -->
-    <label for="druckzeit">Druckzeit pro Platte (in Minuten):</label>
-    <input type="number" id="druckzeit" name="druckzeit" value="60" min="0">
-    
-    <!-- Filamentverbrauch -->
-    <label for="filamentGramm">Filamentverbrauch pro Platte (in Gramm):</label>
-    <input type="number" id="filamentGramm" name="filamentGramm" value="50" min="0">
-    
-    <!-- Farbwechsel -->
-    <label for="farbwechsel">Anzahl Farbwechsel pro Platte:</label>
-    <input type="number" id="farbwechsel" name="farbwechsel" value="0" min="0">
-    
-    <!-- Zusatzpreise -->
-    <h2>Kostenfaktoren</h2>
-    <label for="preisProMinute">Preis pro Minute Druckzeit (in €):</label>
-    <input type="number" id="preisProMinute" name="preisProMinute" value="0.05" step="0.01" min="0">
-    
-    <label for="preisProGramm">Preis pro Gramm Filament (in €):</label>
-    <input type="number" id="preisProGramm" name="preisProGramm" value="0.10" step="0.01" min="0">
-    
-    <label for="preisProFarbwechsel">Preis pro Farbwechsel (in €):</label>
-    <input type="number" id="preisProFarbwechsel" name="preisProFarbwechsel" value="2" step="0.01" min="0">
-    
-    <!-- Button zur Preisberechnung -->
-    <button type="button" id="berechneBtn">Preis berechnen</button>
+  
+  <!-- Auswahl, wie viele Druckplatten berücksichtigt werden sollen -->
+  <form id="globalForm">
+    <label for="numPlates">Anzahl der Druckplatten:</label>
+    <input type="number" id="numPlates" name="numPlates" value="1" min="1">
+    <button type="button" id="createPlatesBtn">Platten erstellen</button>
   </form>
   
-  <!-- Anzeige des berechneten Gesamtpreises -->
-  <p id="preisAnzeige"></p>
+  <!-- Hier werden die Felder für jede Druckplatte dynamisch eingefügt -->
+  <form id="platesForm">
+    <!-- Falls schon eine Platte existiert, können hier die ursprünglichen Felder stehen -->
+  </form>
+  
+  <!-- Button zur Berechnung -->
+  <button type="button" id="calcBtn">Gesamtpreis berechnen</button>
+  
+  <div id="result"></div>
   
   <script>
-    // Funktion zur Berechnung des Gesamtpreises
-    function berechnePreis() {
-      const basisPreis = parseFloat(document.getElementById('basisPreis').value);
-      const anzahlPlatten = parseInt(document.getElementById('druckplatten').value, 10);
-      const druckzeit = parseFloat(document.getElementById('druckzeit').value);
-      const filamentGramm = parseFloat(document.getElementById('filamentGramm').value);
-      const farbwechsel = parseInt(document.getElementById('farbwechsel').value, 10);
+    // Erzeugt für jede Druckplatte einen eigenen Abschnitt mit den ursprünglichen Auswahlmöglichkeiten.
+    document.getElementById('createPlatesBtn').addEventListener('click', function() {
+      const platesForm = document.getElementById('platesForm');
+      platesForm.innerHTML = ""; // vorherige Inhalte löschen
+      const numPlates = parseInt(document.getElementById('numPlates').value, 10);
       
-      const preisProMinute = parseFloat(document.getElementById('preisProMinute').value);
-      const preisProGramm = parseFloat(document.getElementById('preisProGramm').value);
-      const preisProFarbwechsel = parseFloat(document.getElementById('preisProFarbwechsel').value);
-      
-      // Eingabevalidierung
-      if (isNaN(basisPreis) || basisPreis < 0) {
-        document.getElementById('preisAnzeige').textContent = 'Bitte geben Sie einen gültigen Basispreis ein.';
-        return;
+      for (let i = 1; i <= numPlates; i++) {
+        const fieldset = document.createElement('fieldset');
+        fieldset.innerHTML = `
+          <legend>Druckplatte ${i}</legend>
+          <label for="basisPreis${i}">Basispreis (in €):</label>
+          <input type="number" id="basisPreis${i}" name="basisPreis${i}" value="100" step="0.01" min="0">
+          
+          <label for="druckzeit${i}">Druckzeit (in Minuten):</label>
+          <input type="number" id="druckzeit${i}" name="druckzeit${i}" value="60" min="0">
+          
+          <label for="filament${i}">Filamentverbrauch (in Gramm):</label>
+          <input type="number" id="filament${i}" name="filament${i}" value="50" min="0">
+          
+          <label for="farbwechsel${i}">Anzahl Farbwechsel:</label>
+          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0">
+        `;
+        platesForm.appendChild(fieldset);
       }
-      if (isNaN(anzahlPlatten) || anzahlPlatten < 1) {
-        document.getElementById('preisAnzeige').textContent = 'Bitte geben Sie eine gültige Anzahl Druckplatten ein.';
-        return;
-      }
-      
-      // Berechnung der Zusatzkosten pro Platte
-      const kostenDruckzeit = druckzeit * preisProMinute;
-      const kostenFilament = filamentGramm * preisProGramm;
-      const kostenFarbwechsel = farbwechsel * preisProFarbwechsel;
-      
-      // Gesamtkosten pro Platte
-      const kostenProPlatte = basisPreis + kostenDruckzeit + kostenFilament + kostenFarbwechsel;
-      
-      // Gesamtkosten aller Platten
-      const gesamtPreis = kostenProPlatte * anzahlPlatten;
-      
-      document.getElementById('preisAnzeige').textContent = 'Gesamtpreis: ' + gesamtPreis.toFixed(2) + ' €';
-    }
+    });
     
-    // Event Listener zur Ausführung der Berechnung beim Klick auf den Button
-    document.getElementById('berechneBtn').addEventListener('click', berechnePreis);
+    // Berechnet den Gesamtpreis, indem für jede Platte die Auswahlmöglichkeiten genutzt werden.
+    document.getElementById('calcBtn').addEventListener('click', function() {
+      let totalPrice = 0;
+      const numPlates = parseInt(document.getElementById('numPlates').value, 10);
+      
+      // Hier werden globale Preisfaktoren abgefragt, falls diese nicht in den Platten-Feldern enthalten waren.
+      // Diese Preise gelten dann für alle Platten:
+      const pricePerMinute = parseFloat(prompt("Preis pro Minute Druckzeit (in €):", "0.05"));
+      const pricePerGram = parseFloat(prompt("Preis pro Gramm Filament (in €):", "0.10"));
+      const pricePerFarbwechsel = parseFloat(prompt("Preis pro Farbwechsel (in €):", "2.00"));
+      
+      for (let i = 1; i <= numPlates; i++) {
+        const basisPreis = parseFloat(document.getElementById('basisPreis' + i).value) || 0;
+        const druckzeit = parseFloat(document.getElementById('druckzeit' + i).value) || 0;
+        const filament = parseFloat(document.getElementById('filament' + i).value) || 0;
+        const farbwechsel = parseFloat(document.getElementById('farbwechsel' + i).value) || 0;
+        
+        // Berechnung pro Platte (entspricht den Auswahlmöglichkeiten, die du ursprünglich hattest)
+        const platePrice = basisPreis 
+          + (druckzeit * pricePerMinute) 
+          + (filament * pricePerGram) 
+          + (farbwechsel * pricePerFarbwechsel);
+        totalPrice += platePrice;
+      }
+      
+      document.getElementById('result').textContent = "Gesamtpreis: " + totalPrice.toFixed(2) + " €";
+    });
   </script>
 </body>
 </html>
