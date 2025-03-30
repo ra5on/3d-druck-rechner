@@ -30,6 +30,7 @@ Der Rechner ist anschließend über [http://localhost:4000](http://localhost:400
 ├── docker-compose.yml
 └── www/
     └── index.html
+    └── style.css
 ```
 
 - `docker-compose.yml` startet einen Nginx-Webserver im Docker-Container.
