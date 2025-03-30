@@ -53,7 +53,7 @@
       font-weight: bold;
       font-size: 18px;
       text-align: center;
-      white-space: pre-line; /* Damit \n im Text als Zeilenumbruch angezeigt wird */
+      white-space: pre-line;
     }
   </style>
 </head>
@@ -63,63 +63,29 @@
   <!-- Formular zur Auswahl der Anzahl Druckplatten -->
   <form id="setupForm">
     <label for="numPlates">Anzahl der Druckplatten:</label>
-    <input
-      type="number"
-      id="numPlates"
-      name="numPlates"
-      value="1"
-      min="1"
-    />
+    <input type="number" id="numPlates" name="numPlates" value="1" min="1" />
     <button type="button" id="createPlatesBtn">Platten erstellen</button>
   </form>
 
   <!-- Hier werden dynamisch die Felder für jede Druckplatte eingefügt -->
   <form id="platesForm"></form>
 
-  <!-- Bereich für globale Faktoren, die in die Berechnung einfließen -->
+  <!-- Globale Faktoren -->
   <form id="globalForm">
     <fieldset>
       <legend>Globale Faktoren</legend>
       
       <label for="stromkostenKwh">Stromkosten pro kWh (€):</label>
-      <input
-        type="number"
-        id="stromkostenKwh"
-        name="stromkostenKwh"
-        step="0.01"
-        value="0.30"
-        min="0"
-      />
+      <input type="number" id="stromkostenKwh" name="stromkostenKwh" step="0.01" value="0.30" min="0" />
 
       <label for="filamentCost">Filamentkosten pro Gramm (€):</label>
-      <input
-        type="number"
-        id="filamentCost"
-        name="filamentCost"
-        step="0.01"
-        value="0.05"
-        min="0"
-      />
+      <input type="number" id="filamentCost" name="filamentCost" step="0.01" value="0.05" min="0" />
 
       <label for="rabattFreunde">Rabatt für Freunde/Verwandte (%):</label>
-      <input
-        type="number"
-        id="rabattFreunde"
-        name="rabattFreunde"
-        step="0.01"
-        value="0"
-        min="0"
-      />
+      <input type="number" id="rabattFreunde" name="rabattFreunde" step="0.01" value="0" min="0" />
 
       <label for="verpackungVersand">Verpackung und Versand (€):</label>
-      <input
-        type="number"
-        id="verpackungVersand"
-        name="verpackungVersand"
-        step="0.01"
-        value="0"
-        min="0"
-      />
+      <input type="number" id="verpackungVersand" name="verpackungVersand" step="0.01" value="0" min="0" />
     </fieldset>
   </form>
 
@@ -130,7 +96,7 @@
   <div id="result"></div>
 
   <script>
-    // 1. Dynamische Felder pro Platte erstellen
+    // Dynamische Felder pro Platte erstellen
     document.getElementById("createPlatesBtn").addEventListener("click", function () {
       const platesForm = document.getElementById("platesForm");
       platesForm.innerHTML = ""; // Vorherige Felder löschen
@@ -141,7 +107,6 @@
         return;
       }
 
-      // Für jede Platte die gewünschten Eingabefelder anlegen
       for (let i = 1; i <= numPlates; i++) {
         const fieldset = document.createElement("fieldset");
         fieldset.innerHTML = `
@@ -150,11 +115,8 @@
           <label for="druckzeitStunden${i}">Druckzeit (Stunden):</label>
           <input type="number" id="druckzeitStunden${i}" name="druckzeitStunden${i}" value="0" min="0" />
 
-          <label for="druckzeitMin1_${i}">Druckzeit (Minuten):</label>
-          <input type="number" id="druckzeitMin1_${i}" name="druckzeitMin1_${i}" value="0" min="0" />
-
-          <label for="druckzeitMin2_${i}">Druckzeit (Minuten):</label>
-          <input type="number" id="druckzeitMin2_${i}" name="druckzeitMin2_${i}" value="0" min="0" />
+          <label for="druckzeitMin_${i}">Druckzeit (Minuten):</label>
+          <input type="number" id="druckzeitMin_${i}" name="druckzeitMin_${i}" value="0" min="0" />
 
           <label for="filament${i}">Filamentverbrauch (Gramm):</label>
           <input type="number" id="filament${i}" name="filament${i}" value="0" min="0" />
@@ -169,7 +131,7 @@
       }
     });
 
-    // 2. Beispiel-Berechnung ausführen
+    // Berechnung durchführen
     document.getElementById("calcBtn").addEventListener("click", function () {
       const numPlates = parseInt(document.getElementById("numPlates").value, 10);
       if (isNaN(numPlates) || numPlates < 1) {
@@ -177,31 +139,22 @@
         return;
       }
 
-      // Summen über alle Platten
       let totalMinutes = 0;
-      let totalFilament = 0; // einschließlich Abfall
+      let totalFilament = 0; // inklusive Abfall
 
-      // Eingabedaten je Platte auslesen
+      // Daten pro Platte auslesen und summieren
       for (let i = 1; i <= numPlates; i++) {
-        // Druckzeiten
         const hours = parseFloat(document.getElementById("druckzeitStunden" + i).value) || 0;
-        const min1 = parseFloat(document.getElementById("druckzeitMin1_" + i).value) || 0;
-        const min2 = parseFloat(document.getElementById("druckzeitMin2_" + i).value) || 0;
-        
-        // Filament
+        const minutes = parseFloat(document.getElementById("druckzeitMin_" + i).value) || 0;
         const filamentUsed = parseFloat(document.getElementById("filament" + i).value) || 0;
-
-        // Farbwechsel
         const farbwechsel = parseFloat(document.getElementById("farbwechsel" + i).value) || 0;
         const abfallProFarbwechsel = parseFloat(document.getElementById("abfallFarbwechsel" + i).value) || 0;
 
-        // Gesamtzeit pro Platte in Minuten
-        const minutesPlate = (hours * 60) + min1 + min2;
+        const minutesPlate = (hours * 60) + minutes;
         totalMinutes += minutesPlate;
 
-        // Gesamt-Filament = normales Filament + Abfall
-        const filamentMitAbfall = filamentUsed + (farbwechsel * abfallProFarbwechsel);
-        totalFilament += filamentMitAbfall;
+        // Gesamtfilament = normaler Verbrauch + Abfall aus Farbwechseln
+        totalFilament += filamentUsed + (farbwechsel * abfallProFarbwechsel);
       }
 
       // Globale Faktoren
@@ -210,34 +163,32 @@
       const rabattFreunde = parseFloat(document.getElementById("rabattFreunde").value) || 0;
       const verpackungVersand = parseFloat(document.getElementById("verpackungVersand").value) || 0;
 
-      // 1) Gesamt-Druckzeit in Stunden
+      // Gesamtdruckzeit in Stunden
       const totalHours = totalMinutes / 60;
 
-      // 2) Stromkosten (vereinfachte Annahme: 1 Stunde = 1 kWh)
+      // Stromkosten (vereinfacht: 1 Stunde = 1 kWh)
       let stromGesamt = totalHours * stromkostenKwh;
 
-      // 3) Filamentkosten
+      // Filamentkosten
       let filamentGesamt = totalFilament * filamentCost;
 
-      // 4) Gesamtkosten vor Rabatt = Strom + Filament
+      // Zwischensumme vor Rabatt
       let gesamtVorRabatt = stromGesamt + filamentGesamt;
 
-      // 5) Rabatt abziehen
+      // Rabatt anwenden
       let gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
 
-      // 6) Verpackung & Versand drauf
+      // Versand & Verpackung addieren
       let endPreis = gesamtNachRabatt + verpackungVersand;
 
-      // Ausgabe
-      let resultText = "Gesamt-Druckzeit aller Platten: " + totalHours.toFixed(2) + " Stunden\n"
-                     + "Gesamt-Filament (inkl. Abfall): " + totalFilament.toFixed(2) + " g\n\n"
-                     + "Stromkosten (vereinfacht): " + stromGesamt.toFixed(2) + " €\n"
-                     + "Filamentkosten: " + filamentGesamt.toFixed(2) + " €\n"
-                     + "-----------------------------\n"
-                     + "Summe vor Rabatt: " + gesamtVorRabatt.toFixed(2) + " €\n"
-                     + "Summe nach Rabatt: " + gesamtNachRabatt.toFixed(2) + " €\n"
-                     + "Endpreis (inkl. Versand): " + endPreis.toFixed(2) + " €";
-
+      // Ergebnis anzeigen
+      const resultText = "Gesamt-Druckzeit: " + totalHours.toFixed(2) + " Stunden\n" +
+                         "Gesamter Filamentverbrauch (inkl. Abfall): " + totalFilament.toFixed(2) + " g\n\n" +
+                         "Stromkosten: " + stromGesamt.toFixed(2) + " €\n" +
+                         "Filamentkosten: " + filamentGesamt.toFixed(2) + " €\n" +
+                         "Summe vor Rabatt: " + gesamtVorRabatt.toFixed(2) + " €\n" +
+                         "Summe nach Rabatt: " + gesamtNachRabatt.toFixed(2) + " €\n" +
+                         "Endpreis (inkl. Versand): " + endPreis.toFixed(2) + " €";
       document.getElementById("result").textContent = resultText;
     });
   </script>
