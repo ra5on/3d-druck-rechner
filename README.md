@@ -35,7 +35,7 @@ Der Rechner ist anschließend über [http://localhost:4000](http://localhost:400
 
 - `docker-compose.yml` startet einen Nginx-Webserver im Docker-Container.
 - `www/index.html` enthält den eigentlichen 3D-Druck Preisrechner als HTML-Datei.
-- - `www/style.css` enthält das Layout, Dark/Light Mode, Buttons, Tabellarische Ergebnis-Anzeige und Farben.
+- `www/style.css` enthält das Layout, Dark/Light Mode, Buttons, Tabellarische Ergebnis-Anzeige und Farben.
 
 ---
 
