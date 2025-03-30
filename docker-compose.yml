@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:alpine
+    container_name: 3d-druck-rechner
+    ports:
+      - "4000:80"
+    volumes:
+      - ./www:/usr/share/nginx/html:ro
+    restart: unless-stopped
