@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>3D Druck Preisrechner</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D-Druck Preisrechner</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,16 +12,14 @@
       margin-left: auto;
       margin-right: auto;
     }
-    h1, h2 {
+    h1 {
       text-align: center;
+      margin-bottom: 1rem;
     }
-    form, fieldset {
+    form {
       margin-bottom: 20px;
       padding: 10px;
       border: 1px solid #ccc;
-    }
-    legend {
-      font-weight: bold;
     }
     label {
       display: block;
@@ -32,93 +30,188 @@
       padding: 5px;
       box-sizing: border-box;
     }
-    button {
+    fieldset {
+      margin-top: 20px;
       padding: 10px;
+      border: 1px solid #ccc;
+    }
+    legend {
+      font-weight: bold;
+      padding: 0 10px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
       font-size: 16px;
       display: block;
-      margin: 20px auto;
+      margin-left: auto;
+      margin-right: auto;
+      cursor: pointer;
     }
     #result {
-      font-weight: bold;
-      font-size: 20px;
-      text-align: center;
       margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>3D Druck Preisrechner</h1>
-  
-  <!-- Auswahl, wie viele Druckplatten berücksichtigt werden sollen -->
-  <form id="globalForm">
+  <h1>3D-Druck Preisrechner</h1>
+
+  <!-- Formular zur Auswahl der Anzahl Druckplatten -->
+  <form id="setupForm">
     <label for="numPlates">Anzahl der Druckplatten:</label>
-    <input type="number" id="numPlates" name="numPlates" value="1" min="1">
+    <input
+      type="number"
+      id="numPlates"
+      name="numPlates"
+      value="1"
+      min="1"
+    />
     <button type="button" id="createPlatesBtn">Platten erstellen</button>
   </form>
-  
-  <!-- Hier werden die Felder für jede Druckplatte dynamisch eingefügt -->
-  <form id="platesForm">
-    <!-- Falls schon eine Platte existiert, können hier die ursprünglichen Felder stehen -->
+
+  <!-- Hier werden dynamisch die Felder für jede Druckplatte eingefügt -->
+  <form id="platesForm"></form>
+
+  <!-- Bereich für globale Angaben, die am Ende berechnet werden -->
+  <form id="globalForm">
+    <fieldset>
+      <legend>Globale Faktoren</legend>
+      <label for="stromkostenKwh">Stromkosten pro kWh (€):</label>
+      <input
+        type="number"
+        id="stromkostenKwh"
+        name="stromkostenKwh"
+        step="0.01"
+        value="0.30"
+        min="0"
+      />
+
+      <label for="rabattFreunde">Rabatt für Freunde/Verwandte (%):</label>
+      <input
+        type="number"
+        id="rabattFreunde"
+        name="rabattFreunde"
+        step="0.01"
+        value="0"
+        min="0"
+      />
+
+      <label for="verpackungVersand">Verpackung und Versand (€):</label>
+      <input
+        type="number"
+        id="verpackungVersand"
+        name="verpackungVersand"
+        step="0.01"
+        value="0"
+        min="0"
+      />
+    </fieldset>
   </form>
-  
-  <!-- Button zur Berechnung -->
+
+  <!-- Button zur Gesamtberechnung -->
   <button type="button" id="calcBtn">Gesamtpreis berechnen</button>
-  
+
+  <!-- Ergebnisanzeige -->
   <div id="result"></div>
-  
+
   <script>
-    // Erzeugt für jede Druckplatte einen eigenen Abschnitt mit den ursprünglichen Auswahlmöglichkeiten.
-    document.getElementById('createPlatesBtn').addEventListener('click', function() {
-      const platesForm = document.getElementById('platesForm');
-      platesForm.innerHTML = ""; // vorherige Inhalte löschen
-      const numPlates = parseInt(document.getElementById('numPlates').value, 10);
-      
+    // Knopf: Erzeugt dynamisch die Eingabefelder pro Platte
+    document.getElementById("createPlatesBtn").addEventListener("click", function () {
+      const platesForm = document.getElementById("platesForm");
+      platesForm.innerHTML = ""; // Vorherige Felder löschen
+
+      const numPlates = parseInt(document.getElementById("numPlates").value, 10);
+      if (isNaN(numPlates) || numPlates < 1) {
+        alert("Bitte eine gültige Anzahl angeben.");
+        return;
+      }
+
       for (let i = 1; i <= numPlates; i++) {
-        const fieldset = document.createElement('fieldset');
+        const fieldset = document.createElement("fieldset");
         fieldset.innerHTML = `
           <legend>Druckplatte ${i}</legend>
-          <label for="basisPreis${i}">Basispreis (in €):</label>
-          <input type="number" id="basisPreis${i}" name="basisPreis${i}" value="100" step="0.01" min="0">
-          
-          <label for="druckzeit${i}">Druckzeit (in Minuten):</label>
-          <input type="number" id="druckzeit${i}" name="druckzeit${i}" value="60" min="0">
-          
-          <label for="filament${i}">Filamentverbrauch (in Gramm):</label>
-          <input type="number" id="filament${i}" name="filament${i}" value="50" min="0">
-          
-          <label for="farbwechsel${i}">Anzahl Farbwechsel:</label>
-          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0">
+          <label for="druckzeitStunden${i}">Druckzeit (Stunden):</label>
+          <input type="number" id="druckzeitStunden${i}" name="druckzeitStunden${i}" value="0" min="0" />
+
+          <label for="druckzeitMin1_${i}">Druckzeit (Minuten):</label>
+          <input type="number" id="druckzeitMin1_${i}" name="druckzeitMin1_${i}" value="0" min="0" />
+
+          <label for="druckzeitMin2_${i}">Druckzeit (Minuten):</label>
+          <input type="number" id="druckzeitMin2_${i}" name="druckzeitMin2_${i}" value="0" min="0" />
+
+          <label for="farbwechsel${i}">Anzahl der Farbwechsel:</label>
+          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0" />
+
+          <label for="abfallFarbwechsel${i}">Abfall pro Farbwechsel (Gramm):</label>
+          <input type="number" id="abfallFarbwechsel${i}" name="abfallFarbwechsel${i}" value="0" min="0" />
         `;
         platesForm.appendChild(fieldset);
       }
     });
-    
-    // Berechnet den Gesamtpreis, indem für jede Platte die Auswahlmöglichkeiten genutzt werden.
-    document.getElementById('calcBtn').addEventListener('click', function() {
-      let totalPrice = 0;
-      const numPlates = parseInt(document.getElementById('numPlates').value, 10);
-      
-      // Hier werden globale Preisfaktoren abgefragt, falls diese nicht in den Platten-Feldern enthalten waren.
-      // Diese Preise gelten dann für alle Platten:
-      const pricePerMinute = parseFloat(prompt("Preis pro Minute Druckzeit (in €):", "0.05"));
-      const pricePerGram = parseFloat(prompt("Preis pro Gramm Filament (in €):", "0.10"));
-      const pricePerFarbwechsel = parseFloat(prompt("Preis pro Farbwechsel (in €):", "2.00"));
-      
-      for (let i = 1; i <= numPlates; i++) {
-        const basisPreis = parseFloat(document.getElementById('basisPreis' + i).value) || 0;
-        const druckzeit = parseFloat(document.getElementById('druckzeit' + i).value) || 0;
-        const filament = parseFloat(document.getElementById('filament' + i).value) || 0;
-        const farbwechsel = parseFloat(document.getElementById('farbwechsel' + i).value) || 0;
-        
-        // Berechnung pro Platte (entspricht den Auswahlmöglichkeiten, die du ursprünglich hattest)
-        const platePrice = basisPreis 
-          + (druckzeit * pricePerMinute) 
-          + (filament * pricePerGram) 
-          + (farbwechsel * pricePerFarbwechsel);
-        totalPrice += platePrice;
+
+    // Knopf: Führt eine Beispiel-Berechnung durch
+    document.getElementById("calcBtn").addEventListener("click", function () {
+      const numPlates = parseInt(document.getElementById("numPlates").value, 10);
+      if (isNaN(numPlates) || numPlates < 1) {
+        document.getElementById("result").textContent = "Bitte erst Platten erstellen.";
+        return;
       }
-      
-      document.getElementById('result').textContent = "Gesamtpreis: " + totalPrice.toFixed(2) + " €";
+
+      let totalMinutes = 0;
+      let totalFarbwechsel = 0;
+      let totalAbfall = 0;
+
+      // Daten pro Platte einsammeln
+      for (let i = 1; i <= numPlates; i++) {
+        const hours = parseFloat(document.getElementById("druckzeitStunden" + i).value) || 0;
+        const min1 = parseFloat(document.getElementById("druckzeitMin1_" + i).value) || 0;
+        const min2 = parseFloat(document.getElementById("druckzeitMin2_" + i).value) || 0;
+        const farbwechsel = parseFloat(document.getElementById("farbwechsel" + i).value) || 0;
+        const abfallProFarbwechsel = parseFloat(document.getElementById("abfallFarbwechsel" + i).value) || 0;
+
+        // Gesamtminuten pro Platte
+        const minutesPlate = (hours * 60) + min1 + min2;
+        totalMinutes += minutesPlate;
+
+        // Farbwechsel und Abfall summieren
+        totalFarbwechsel += farbwechsel;
+        totalAbfall += farbwechsel * abfallProFarbwechsel;
+      }
+
+      // Globale Faktoren
+      const stromkostenKwh = parseFloat(document.getElementById("stromkostenKwh").value) || 0;
+      const rabattFreunde = parseFloat(document.getElementById("rabattFreunde").value) || 0;
+      const verpackungVersand = parseFloat(document.getElementById("verpackungVersand").value) || 0;
+
+      // Beispielhafte Kalkulation:
+      // 1) Druckzeit in Stunden
+      const totalHours = totalMinutes / 60;
+
+      // 2) Stromkosten (sehr vereinfacht!)
+      //    In der Praxis brauchst du: (Leistungsaufnahme [kW] * Druckzeit [h]) * Stromkosten [€/kWh].
+      //    Hier wird beispielhaft nur "Stunden * Stromkosten" gerechnet.
+      let stromGesamt = totalHours * stromkostenKwh;
+
+      // 3) Rabatt anwenden
+      let preisNachRabatt = stromGesamt - (stromGesamt * (rabattFreunde / 100));
+
+      // 4) Verpackung & Versand draufschlagen
+      let endPreis = preisNachRabatt + verpackungVersand;
+
+      // Ausgabe
+      let resultText = "Gesamtstunden (alle Platten): " + totalHours.toFixed(2) + " h\n"
+                     + "Summe Farbwechsel: " + totalFarbwechsel + "\n"
+                     + "Summe Abfall (Gramm): " + totalAbfall.toFixed(2) + "\n\n"
+                     + "Beispiel-Kostenrechnung:\n"
+                     + "Stromkosten (vereinfacht): " + stromGesamt.toFixed(2) + " €\n"
+                     + "Preis nach Rabatt: " + preisNachRabatt.toFixed(2) + " €\n"
+                     + "Endpreis (inkl. Versand): " + endPreis.toFixed(2) + " €";
+
+      // Im Browser anzeigen (Zeilenumbrüche durch <br> ersetzen)
+      document.getElementById("result").innerHTML = resultText.replace(/\n/g, "<br>");
     });
   </script>
 </body>
