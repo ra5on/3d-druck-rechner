@@ -81,7 +81,7 @@ Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
 
 ## 🙋 Autor
 
-**Patrick Joost**
+**ra5on**
 
 ---
 
