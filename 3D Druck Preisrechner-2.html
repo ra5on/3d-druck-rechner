@@ -21,15 +21,6 @@
       padding: 10px;
       border: 1px solid #ccc;
     }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input[type="number"] {
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
     fieldset {
       margin-top: 20px;
       padding: 10px;
@@ -38,6 +29,15 @@
     legend {
       font-weight: bold;
       padding: 0 10px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
     }
     button {
       margin-top: 20px;
@@ -53,6 +53,7 @@
       font-weight: bold;
       font-size: 18px;
       text-align: center;
+      white-space: pre-line; /* Damit \n im Text als Zeilenumbruch angezeigt wird */
     }
   </style>
 </head>
@@ -75,10 +76,11 @@
   <!-- Hier werden dynamisch die Felder für jede Druckplatte eingefügt -->
   <form id="platesForm"></form>
 
-  <!-- Bereich für globale Angaben, die am Ende berechnet werden -->
+  <!-- Bereich für globale Faktoren, die in die Berechnung einfließen -->
   <form id="globalForm">
     <fieldset>
       <legend>Globale Faktoren</legend>
+      
       <label for="stromkostenKwh">Stromkosten pro kWh (€):</label>
       <input
         type="number"
@@ -86,6 +88,16 @@
         name="stromkostenKwh"
         step="0.01"
         value="0.30"
+        min="0"
+      />
+
+      <label for="filamentCost">Filamentkosten pro Gramm (€):</label>
+      <input
+        type="number"
+        id="filamentCost"
+        name="filamentCost"
+        step="0.01"
+        value="0.05"
         min="0"
       />
 
@@ -118,7 +130,7 @@
   <div id="result"></div>
 
   <script>
-    // Knopf: Erzeugt dynamisch die Eingabefelder pro Platte
+    // 1. Dynamische Felder pro Platte erstellen
     document.getElementById("createPlatesBtn").addEventListener("click", function () {
       const platesForm = document.getElementById("platesForm");
       platesForm.innerHTML = ""; // Vorherige Felder löschen
@@ -129,10 +141,12 @@
         return;
       }
 
+      // Für jede Platte die gewünschten Eingabefelder anlegen
       for (let i = 1; i <= numPlates; i++) {
         const fieldset = document.createElement("fieldset");
         fieldset.innerHTML = `
           <legend>Druckplatte ${i}</legend>
+
           <label for="druckzeitStunden${i}">Druckzeit (Stunden):</label>
           <input type="number" id="druckzeitStunden${i}" name="druckzeitStunden${i}" value="0" min="0" />
 
@@ -141,6 +155,9 @@
 
           <label for="druckzeitMin2_${i}">Druckzeit (Minuten):</label>
           <input type="number" id="druckzeitMin2_${i}" name="druckzeitMin2_${i}" value="0" min="0" />
+
+          <label for="filament${i}">Filamentverbrauch (Gramm):</label>
+          <input type="number" id="filament${i}" name="filament${i}" value="0" min="0" />
 
           <label for="farbwechsel${i}">Anzahl der Farbwechsel:</label>
           <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0" />
@@ -152,66 +169,76 @@
       }
     });
 
-    // Knopf: Führt eine Beispiel-Berechnung durch
+    // 2. Beispiel-Berechnung ausführen
     document.getElementById("calcBtn").addEventListener("click", function () {
       const numPlates = parseInt(document.getElementById("numPlates").value, 10);
       if (isNaN(numPlates) || numPlates < 1) {
-        document.getElementById("result").textContent = "Bitte erst Platten erstellen.";
+        document.getElementById("result").textContent = "Bitte zuerst Platten erstellen.";
         return;
       }
 
+      // Summen über alle Platten
       let totalMinutes = 0;
-      let totalFarbwechsel = 0;
-      let totalAbfall = 0;
+      let totalFilament = 0; // einschließlich Abfall
 
-      // Daten pro Platte einsammeln
+      // Eingabedaten je Platte auslesen
       for (let i = 1; i <= numPlates; i++) {
+        // Druckzeiten
         const hours = parseFloat(document.getElementById("druckzeitStunden" + i).value) || 0;
         const min1 = parseFloat(document.getElementById("druckzeitMin1_" + i).value) || 0;
         const min2 = parseFloat(document.getElementById("druckzeitMin2_" + i).value) || 0;
+        
+        // Filament
+        const filamentUsed = parseFloat(document.getElementById("filament" + i).value) || 0;
+
+        // Farbwechsel
         const farbwechsel = parseFloat(document.getElementById("farbwechsel" + i).value) || 0;
         const abfallProFarbwechsel = parseFloat(document.getElementById("abfallFarbwechsel" + i).value) || 0;
 
-        // Gesamtminuten pro Platte
+        // Gesamtzeit pro Platte in Minuten
         const minutesPlate = (hours * 60) + min1 + min2;
         totalMinutes += minutesPlate;
 
-        // Farbwechsel und Abfall summieren
-        totalFarbwechsel += farbwechsel;
-        totalAbfall += farbwechsel * abfallProFarbwechsel;
+        // Gesamt-Filament = normales Filament + Abfall
+        const filamentMitAbfall = filamentUsed + (farbwechsel * abfallProFarbwechsel);
+        totalFilament += filamentMitAbfall;
       }
 
       // Globale Faktoren
       const stromkostenKwh = parseFloat(document.getElementById("stromkostenKwh").value) || 0;
+      const filamentCost = parseFloat(document.getElementById("filamentCost").value) || 0;
       const rabattFreunde = parseFloat(document.getElementById("rabattFreunde").value) || 0;
       const verpackungVersand = parseFloat(document.getElementById("verpackungVersand").value) || 0;
 
-      // Beispielhafte Kalkulation:
-      // 1) Druckzeit in Stunden
+      // 1) Gesamt-Druckzeit in Stunden
       const totalHours = totalMinutes / 60;
 
-      // 2) Stromkosten (sehr vereinfacht!)
-      //    In der Praxis brauchst du: (Leistungsaufnahme [kW] * Druckzeit [h]) * Stromkosten [€/kWh].
-      //    Hier wird beispielhaft nur "Stunden * Stromkosten" gerechnet.
+      // 2) Stromkosten (vereinfachte Annahme: 1 Stunde = 1 kWh)
       let stromGesamt = totalHours * stromkostenKwh;
 
-      // 3) Rabatt anwenden
-      let preisNachRabatt = stromGesamt - (stromGesamt * (rabattFreunde / 100));
+      // 3) Filamentkosten
+      let filamentGesamt = totalFilament * filamentCost;
 
-      // 4) Verpackung & Versand draufschlagen
-      let endPreis = preisNachRabatt + verpackungVersand;
+      // 4) Gesamtkosten vor Rabatt = Strom + Filament
+      let gesamtVorRabatt = stromGesamt + filamentGesamt;
+
+      // 5) Rabatt abziehen
+      let gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
+
+      // 6) Verpackung & Versand drauf
+      let endPreis = gesamtNachRabatt + verpackungVersand;
 
       // Ausgabe
-      let resultText = "Gesamtstunden (alle Platten): " + totalHours.toFixed(2) + " h\n"
-                     + "Summe Farbwechsel: " + totalFarbwechsel + "\n"
-                     + "Summe Abfall (Gramm): " + totalAbfall.toFixed(2) + "\n\n"
-                     + "Beispiel-Kostenrechnung:\n"
+      let resultText = "Gesamt-Druckzeit aller Platten: " + totalHours.toFixed(2) + " Stunden\n"
+                     + "Gesamt-Filament (inkl. Abfall): " + totalFilament.toFixed(2) + " g\n\n"
                      + "Stromkosten (vereinfacht): " + stromGesamt.toFixed(2) + " €\n"
-                     + "Preis nach Rabatt: " + preisNachRabatt.toFixed(2) + " €\n"
+                     + "Filamentkosten: " + filamentGesamt.toFixed(2) + " €\n"
+                     + "-----------------------------\n"
+                     + "Summe vor Rabatt: " + gesamtVorRabatt.toFixed(2) + " €\n"
+                     + "Summe nach Rabatt: " + gesamtNachRabatt.toFixed(2) + " €\n"
                      + "Endpreis (inkl. Versand): " + endPreis.toFixed(2) + " €";
 
-      // Im Browser anzeigen (Zeilenumbrüche durch <br> ersetzen)
-      document.getElementById("result").innerHTML = resultText.replace(/\n/g, "<br>");
+      document.getElementById("result").textContent = resultText;
     });
   </script>
 </body>
