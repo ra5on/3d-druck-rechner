@@ -9,7 +9,7 @@ Ein einfacher, webbasierter Preisrechner für deine 3D-Druck-Projekte, bereitges
 ### Schritt 1: Repository klonen
 
 ```bash
-git clone <dein-github-link>
+git clone https://github.com/ra5on/3d-druck-rechner.git
 cd 3d-druck-rechner
 ```
 
