@@ -1,16 +1,65 @@
-/* style.css */
+/* CSS-Variablen für Light- und Darkmode */
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --input-background: #ffffff;
+  --input-text: #000000;
+  --input-border: #ccc;
+  --button-background: #444;
+  --button-text: #ffffff;
+  --highlight-bg: #f0f0f0; /* Für Tabellenzeilen, wenn gewünscht */
+}
+
+/* Dark Mode via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #121212;
+    --text-color: #e0e0e0;
+    --input-background: #1e1e1e;
+    --input-text: #e0e0e0;
+    --input-border: #333;
+    --button-background: #333;
+    --button-text: #e0e0e0;
+    --highlight-bg: #2a2a2a;
+  }
+}
+
+/* Manuelle Darkmode-Klasse */
+body.dark-mode {
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --input-background: #1e1e1e;
+  --input-text: #e0e0e0;
+  --input-border: #333;
+  --button-background: #333;
+  --button-text: #e0e0e0;
+  --highlight-bg: #2a2a2a;
+}
+
+/* Basis-Styles für Body und Container */
 body {
+  background-color: var(--background-color);
+  color: var(--text-color);
   font-family: Arial, sans-serif;
-  margin: 20px;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: 18px;     /* Größere Schrift für bessere Lesbarkeit */
+  line-height: 1.5;
+  margin: 0;
   transition: background-color 0.3s, color 0.3s;
 }
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Überschrift */
 h1 {
   text-align: center;
   margin-bottom: 1rem;
 }
+
+/* Formulare, Fieldsets und Labels */
 form {
   margin-bottom: 20px;
   padding: 10px;
@@ -29,14 +78,30 @@ label {
   display: block;
   margin-top: 10px;
 }
+
+/* Input-Felder (Größe + größere Spin-Buttons) */
 input[type="number"] {
   width: 100%;
-  padding: 5px;
+  padding: 8px;  /* Etwas mehr Padding für größere Klickfläche */
   box-sizing: border-box;
-  border: 1px solid #ccc;
+  background-color: var(--input-background);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  transition: background-color 0.3s, color 0.3s;
+  font-size: 1rem;  /* Schriftgröße anpassen */
+  transition: background-color 0.3s, color 0.3s, border 0.3s;
 }
+
+/* Größere Spin-Buttons (nur WebKit-basierte Browser wie Chrome, Safari) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  width: 1.5rem;  /* Breite der Pfeile */
+  height: 1.5rem; /* Höhe der Pfeile */
+}
+
+/* Buttons */
 button {
   margin-top: 20px;
   padding: 10px 20px;
@@ -45,25 +110,14 @@ button {
   margin-left: auto;
   margin-right: auto;
   cursor: pointer;
-}
-#result {
-  margin-top: 20px;
-  font-weight: bold;
-  font-size: 18px;
-  text-align: center;
-  white-space: pre-line;
+  background: var(--button-background);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  transition: background 0.3s, color 0.3s;
 }
 
-/* Darkmode-Styles mit verbessertem Kontrast */
-.dark-mode {
-  background-color: #222222; /* Etwas hellerer Hintergrund */
-  color: #ffffff;            /* Reines Weiß für den Text */
-  transition: background-color 0.3s, color 0.3s;
-}
-.light-mode {
-  background-color: #ffffff;
-  color: #000000;
-}
+/* Theme-Toggle-Button */
 .theme-toggle {
   position: fixed;
   top: 10px;
@@ -71,23 +125,37 @@ button {
   padding: 6px 12px;
   cursor: pointer;
   border: none;
-  background: #444;
-  color: white;
+  background: var(--button-background);
+  color: var(--button-text);
   border-radius: 4px;
   z-index: 1000;
 }
-.dark-mode input[type="number"] {
-  background-color: #333333; /* Abgehobener als der Body-Hintergrund */
-  color: #ffffff;
-  border: 1px solid #888888; /* Hellere Umrandung für bessere Sichtbarkeit */
-  transition: background-color 0.3s, color 0.3s, border 0.3s;
+
+/* Ergebnis-Ausgabe als Tabelle */
+#result {
+  margin-top: 20px;
+  text-align: center;
 }
-.light-mode input[type="number"] {
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #ccc;
+
+/* Tabellen-Stile für das Ergebnis */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto; /* zentriert die Tabelle selbst */
+  max-width: 600px; /* optional, um die Breite zu begrenzen */
 }
-.dark-mode .theme-toggle {
-  background: #888888;
-  color: #222222;
+.result-table th,
+.result-table td {
+  border: 1px solid var(--input-border);
+  padding: 0.8rem;
+  font-size: 1rem;
+}
+.result-table th {
+  text-align: left;
+  background-color: var(--button-background);
+  color: var(--button-text);
+  width: 60%;
+}
+.result-table tr:nth-child(even) td {
+  background-color: var(--highlight-bg);
 }
