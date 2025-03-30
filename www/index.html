@@ -11,34 +11,45 @@
       max-width: 800px;
       margin-left: auto;
       margin-right: auto;
+      transition: background-color 0.3s, color 0.3s;
     }
+
     h1 {
       text-align: center;
       margin-bottom: 1rem;
     }
+
     form {
       margin-bottom: 20px;
       padding: 10px;
       border: 1px solid #ccc;
     }
+
     fieldset {
       margin-top: 20px;
       padding: 10px;
       border: 1px solid #ccc;
     }
+
     legend {
       font-weight: bold;
       padding: 0 10px;
     }
+
     label {
       display: block;
       margin-top: 10px;
     }
+
     input[type="number"] {
       width: 100%;
       padding: 5px;
       box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      transition: background-color 0.3s, color 0.3s;
     }
+
     button {
       margin-top: 20px;
       padding: 10px 20px;
@@ -48,6 +59,7 @@
       margin-right: auto;
       cursor: pointer;
     }
+
     #result {
       margin-top: 20px;
       font-weight: bold;
@@ -55,26 +67,61 @@
       text-align: center;
       white-space: pre-line;
     }
+
+    .dark-mode {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+
+    .light-mode {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+      border: none;
+      background: #444;
+      color: white;
+      border-radius: 4px;
+      z-index: 1000;
+    }
+
+    .dark-mode input[type="number"] {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      border: 1px solid #444;
+    }
+
+    .light-mode input[type="number"] {
+      background-color: #ffffff;
+      color: #000000;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
+
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+
   <h1>3D-Druck Preisrechner</h1>
 
-  <!-- Formular zur Auswahl der Anzahl Druckplatten -->
   <form id="setupForm">
     <label for="numPlates">Anzahl der Druckplatten:</label>
     <input type="number" id="numPlates" name="numPlates" value="1" min="1" />
     <button type="button" id="createPlatesBtn">Platten erstellen</button>
   </form>
 
-  <!-- Hier werden dynamisch die Felder für jede Druckplatte eingefügt -->
   <form id="platesForm"></form>
 
-  <!-- Globale Faktoren -->
   <form id="globalForm">
     <fieldset>
       <legend>Globale Faktoren</legend>
-      
+
       <label for="stromkostenKwh">Stromkosten pro kWh (€):</label>
       <input type="number" id="stromkostenKwh" name="stromkostenKwh" step="0.01" value="0.35" min="0" />
 
@@ -95,17 +142,32 @@
     </fieldset>
   </form>
 
-  <!-- Button zur Gesamtberechnung -->
   <button type="button" id="calcBtn">Gesamtpreis berechnen</button>
 
-  <!-- Ergebnisanzeige -->
   <div id="result"></div>
 
   <script>
-    // Dynamische Felder pro Druckplatte erstellen
+    function toggleTheme() {
+      const body = document.body;
+      if (body.classList.contains('dark-mode')) {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    window.onload = function () {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.body.classList.add(savedTheme + '-mode');
+    };
+
     document.getElementById("createPlatesBtn").addEventListener("click", function () {
       const platesForm = document.getElementById("platesForm");
-      platesForm.innerHTML = ""; // Vorherige Felder löschen
+      platesForm.innerHTML = "";
 
       const numPlates = parseInt(document.getElementById("numPlates").value, 10);
       if (isNaN(numPlates) || numPlates < 1) {
@@ -128,7 +190,7 @@
           <input type="number" id="filament${i}" name="filament${i}" value="0" min="0" />
 
           <label for="farbwechsel${i}">Anzahl der Farbwechsel:</label>
-          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="0" min="0" />
+          <input type="number" id="farbwechsel${i}" name="farbwechsel${i}" value="3" min="0" />
 
           <label for="abfallFarbwechsel${i}">Abfall pro Farbwechsel (Gramm):</label>
           <input type="number" id="abfallFarbwechsel${i}" name="abfallFarbwechsel${i}" value="0" min="0" />
@@ -137,7 +199,6 @@
       }
     });
 
-    // Berechnung durchführen
     document.getElementById("calcBtn").addEventListener("click", function () {
       const numPlates = parseInt(document.getElementById("numPlates").value, 10);
       if (isNaN(numPlates) || numPlates < 1) {
@@ -146,9 +207,8 @@
       }
 
       let totalMinutes = 0;
-      let totalFilament = 0; // inklusive Abfall
+      let totalFilament = 0;
 
-      // Daten pro Platte auslesen und summieren
       for (let i = 1; i <= numPlates; i++) {
         const hours = parseFloat(document.getElementById("druckzeitStunden" + i).value) || 0;
         const minutes = parseFloat(document.getElementById("druckzeitMin_" + i).value) || 0;
@@ -158,12 +218,9 @@
 
         const minutesPlate = (hours * 60) + minutes;
         totalMinutes += minutesPlate;
-
-        // Gesamtfilament = normaler Verbrauch + Abfall aus Farbwechseln
         totalFilament += filamentUsed + (farbwechsel * abfallProFarbwechsel);
       }
 
-      // Globale Faktoren einlesen
       const stromkostenKwh = parseFloat(document.getElementById("stromkostenKwh").value) || 0;
       const filamentCost = parseFloat(document.getElementById("filamentCost").value) || 0;
       const rabattFreunde = parseFloat(document.getElementById("rabattFreunde").value) || 0;
@@ -171,31 +228,15 @@
       const gewinnmarge = parseFloat(document.getElementById("gewinnmarge").value) || 0;
       const wartungskosten = parseFloat(document.getElementById("wartungskosten").value) || 0;
 
-      // Gesamtdruckzeit in Stunden
       const totalHours = totalMinutes / 60;
-
-      // Stromkosten (vereinfacht: 1 Stunde = 1 kWh)
       let stromGesamt = totalHours * stromkostenKwh;
-
-      // Filamentkosten
       let filamentGesamt = totalFilament * filamentCost;
-
-      // Zwischensumme vor Rabatt
       let gesamtVorRabatt = stromGesamt + filamentGesamt;
-
-      // Rabatt anwenden
       let gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
-
-      // Wartungskosten berechnen (pro Stunde)
       let wartungGesamt = totalHours * wartungskosten;
-
-      // Kosten vor Marge (inkl. Versand & Wartung)
       let kostenOhneMarge = gesamtNachRabatt + verpackungVersand + wartungGesamt;
-
-      // Gewinnmarge anwenden
       let finalPreis = kostenOhneMarge * (1 + (gewinnmarge / 100));
 
-      // Ergebnis anzeigen
       const resultText = 
         "Gesamt-Druckzeit: " + totalHours.toFixed(2) + " Stunden\n" +
         "Gesamter Filamentverbrauch (inkl. Abfall): " + totalFilament.toFixed(2) + " g\n\n" +
