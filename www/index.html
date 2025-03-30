@@ -4,65 +4,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>3D-Druck Preisrechner</title>
+  <!-- CSS-Datei einbinden -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="container">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
 
-  <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+    <h1>3D-Druck Preisrechner</h1>
 
-  <h1>3D-Druck Preisrechner</h1>
+    <form id="setupForm">
+      <label for="numPlates">Anzahl der Druckplatten:</label>
+      <input type="number" id="numPlates" name="numPlates" value="1" min="1" />
+      <button type="button" id="createPlatesBtn">Platten erstellen</button>
+    </form>
 
-  <form id="setupForm">
-    <label for="numPlates">Anzahl der Druckplatten:</label>
-    <input type="number" id="numPlates" name="numPlates" value="1" min="1" />
-    <button type="button" id="createPlatesBtn">Platten erstellen</button>
-  </form>
+    <form id="platesForm"></form>
 
-  <form id="platesForm"></form>
+    <form id="globalForm">
+      <fieldset>
+        <legend>Globale Faktoren</legend>
 
-  <form id="globalForm">
-    <fieldset>
-      <legend>Globale Faktoren</legend>
+        <label for="stromkostenKwh">Stromkosten pro kWh (€):</label>
+        <input type="number" id="stromkostenKwh" name="stromkostenKwh" step="0.01" value="0.35" min="0" />
 
-      <label for="stromkostenKwh">Stromkosten pro kWh (€):</label>
-      <input type="number" id="stromkostenKwh" name="stromkostenKwh" step="0.01" value="0.35" min="0" />
+        <label for="filamentCost">Filamentkosten pro Gramm (€):</label>
+        <input type="number" id="filamentCost" name="filamentCost" step="0.01" value="0.02" min="0" />
 
-      <label for="filamentCost">Filamentkosten pro Gramm (€):</label>
-      <input type="number" id="filamentCost" name="filamentCost" step="0.01" value="0.02" min="0" />
+        <label for="rabattFreunde">Rabatt für Freunde/Verwandte (%):</label>
+        <input type="number" id="rabattFreunde" name="rabattFreunde" step="0.01" value="0" min="0" />
 
-      <label for="rabattFreunde">Rabatt für Freunde/Verwandte (%):</label>
-      <input type="number" id="rabattFreunde" name="rabattFreunde" step="0.01" value="0" min="0" />
+        <label for="verpackungVersand">Verpackung und Versand (€):</label>
+        <input type="number" id="verpackungVersand" name="verpackungVersand" step="0.01" value="0" min="0" />
 
-      <label for="verpackungVersand">Verpackung und Versand (€):</label>
-      <input type="number" id="verpackungVersand" name="verpackungVersand" step="0.01" value="0" min="0" />
+        <label>Gewinnziel:</label>
+        <input type="radio" name="gewinnPreset" value="privat" onclick="setGewinnmarge(0)"> Privat (0 %)
+        <input type="radio" name="gewinnPreset" value="freunde" onclick="setGewinnmarge(20)"> Freunde (20 %)
+        <input type="radio" name="gewinnPreset" value="verkauf" onclick="setGewinnmarge(50)" checked> Verkauf (50 %)
+        <input type="radio" name="gewinnPreset" value="profi" onclick="setGewinnmarge(100)"> Profi (100 %)
 
-      <label>Gewinnziel:</label>
-      <input type="radio" name="gewinnPreset" value="privat" onclick="setGewinnmarge(0)"> Privat (0 %)
-      <input type="radio" name="gewinnPreset" value="freunde" onclick="setGewinnmarge(20)"> Freunde (20 %)
-      <input type="radio" name="gewinnPreset" value="verkauf" onclick="setGewinnmarge(50)" checked> Verkauf (50 %)
-      <input type="radio" name="gewinnPreset" value="profi" onclick="setGewinnmarge(100)"> Profi (100 %)
+        <label for="gewinnmarge">Gewinnmarge (%):</label>
+        <input type="number" id="gewinnmarge" name="gewinnmarge" step="0.01" value="50" min="0" />
 
-      <label for="gewinnmarge">Gewinnmarge (%):</label>
-      <input type="number" id="gewinnmarge" name="gewinnmarge" step="0.01" value="50" min="0" />
+        <label for="wartungskosten">Wartungskosten pro Stunde (€):</label>
+        <input type="number" id="wartungskosten" name="wartungskosten" step="0.01" value="0.20" min="0" />
+      </fieldset>
+    </form>
 
-      <label for="wartungskosten">Wartungskosten pro Stunde (€):</label>
-      <input type="number" id="wartungskosten" name="wartungskosten" step="0.01" value="0.20" min="0" />
-    </fieldset>
-  </form>
+    <button type="button" id="calcBtn">Gesamtpreis berechnen</button>
 
-  <button type="button" id="calcBtn">Gesamtpreis berechnen</button>
-
-  <div id="result"></div>
+    <div id="result"></div>
+  </div> <!-- Ende container -->
 
   <script>
     function toggleTheme() {
       const body = document.body;
       if (body.classList.contains('dark-mode')) {
         body.classList.remove('dark-mode');
-        body.classList.add('light-mode');
         localStorage.setItem('theme', 'light');
       } else {
-        body.classList.remove('light-mode');
         body.classList.add('dark-mode');
         localStorage.setItem('theme', 'dark');
       }
@@ -73,8 +73,10 @@
     }
 
     window.onload = function () {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(savedTheme + '-mode');
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+      }
     };
 
     document.getElementById("createPlatesBtn").addEventListener("click", function () {
@@ -141,29 +143,62 @@
       const wartungskosten = parseFloat(document.getElementById("wartungskosten").value) || 0;
 
       const totalHours = totalMinutes / 60;
-      let stromGesamt = totalHours * stromkostenKwh;
-      let filamentGesamt = totalFilament * filamentCost;
-      let gesamtVorRabatt = stromGesamt + filamentGesamt;
-      let gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
-      let wartungGesamt = totalHours * wartungskosten;
+      const stromGesamt = totalHours * stromkostenKwh;
+      const filamentGesamt = totalFilament * filamentCost;
+      const gesamtVorRabatt = stromGesamt + filamentGesamt;
+      const gesamtNachRabatt = gesamtVorRabatt * (1 - (rabattFreunde / 100));
+      const wartungGesamt = totalHours * wartungskosten;
       
       // Versandkosten werden nach Gewinnmarge addiert
-      let kostenVorMarge = gesamtNachRabatt + wartungGesamt;
-      let finalPreis = (kostenVorMarge * (1 + (gewinnmarge / 100))) + verpackungVersand;
+      const kostenVorMarge = gesamtNachRabatt + wartungGesamt;
+      const finalPreis = (kostenVorMarge * (1 + (gewinnmarge / 100))) + verpackungVersand;
 
-      const resultText =
-        "Gesamt-Druckzeit: " + totalHours.toFixed(2) + " Stunden\n" +
-        "Gesamter Filamentverbrauch (inkl. Abfall): " + totalFilament.toFixed(2) + " g\n\n" +
-        "Stromkosten: " + stromGesamt.toFixed(2) + " €\n" +
-        "Filamentkosten: " + filamentGesamt.toFixed(2) + " €\n" +
-        "Zwischensumme vor Rabatt: " + gesamtVorRabatt.toFixed(2) + " €\n" +
-        "Nach Rabatt: " + gesamtNachRabatt.toFixed(2) + " €\n" +
-        "Wartungskosten: " + wartungGesamt.toFixed(2) + " €\n" +
-        "Verpackung & Versand: " + verpackungVersand.toFixed(2) + " €\n" +
-        "Kosten vor Marge: " + kostenVorMarge.toFixed(2) + " €\n" +
-        "Endpreis (mit " + gewinnmarge.toFixed(2) + "% Gewinnmarge): " + finalPreis.toFixed(2) + " €";
-
-      document.getElementById("result").textContent = resultText;
+      // Statt reinen Text zu verwenden, bauen wir eine Tabelle zusammen:
+      const resultHTML = `
+        <table class="result-table">
+          <tr>
+            <th>Gesamt-Druckzeit</th>
+            <td>${totalHours.toFixed(2)} Stunden</td>
+          </tr>
+          <tr>
+            <th>Filamentverbrauch (inkl. Abfall)</th>
+            <td>${totalFilament.toFixed(2)} g</td>
+          </tr>
+          <tr>
+            <th>Stromkosten</th>
+            <td>${stromGesamt.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Filamentkosten</th>
+            <td>${filamentGesamt.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Zwischensumme vor Rabatt</th>
+            <td>${gesamtVorRabatt.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Nach Rabatt</th>
+            <td>${gesamtNachRabatt.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Wartungskosten</th>
+            <td>${wartungGesamt.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Verpackung &amp; Versand</th>
+            <td>${verpackungVersand.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Kosten vor Marge</th>
+            <td>${kostenVorMarge.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <th>Endpreis (mit ${gewinnmarge.toFixed(2)}% Gewinnmarge)</th>
+            <td>${finalPreis.toFixed(2)} €</td>
+          </tr>
+        </table>
+      `;
+      document.getElementById("result").innerHTML = resultHTML;
     });
   </script>
 </body>
