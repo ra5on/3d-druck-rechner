@@ -1,150 +1,128 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D-Druck Preisrechner</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e8f5e9;
-            border: 1px solid #c8e6c9;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Druck Preisrechner mit Zusatzvariablen</title>
+  <style>
+    /* Basis CSS für ein sauberes Layout */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+    }
+    #preisAnzeige {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-    <h1>3D-Druck Preisrechner</h1>
-    <form id="priceForm">
-        <div class="form-group">
-            <label for="printTimeHours">Druckzeit (Stunden):</label>
-            <input type="number" id="printTimeHours" min="0" step="1" required>
-        </div>
-        <div class="form-group">
-            <label for="printTimeMinutes">Druckzeit (Minuten):</label>
-            <input type="number" id="printTimeMinutes" min="0" max="59" step="1" value="0" required>
-        </div>
-        <div class="form-group">
-            <label for="filamentUsed">Filamentverbrauch (Gramm):</label>
-            <input type="number" id="filamentUsed" min="0" step="1" required>
-        </div>
-        <div class="form-group">
-            <label for="colorChanges">Anzahl der Farbwechsel:</label>
-            <input type="number" id="colorChanges" min="0" step="1" value="0">
-        </div>
-        <div class="form-group">
-            <label for="wastePerColorChange">Abfall pro Farbwechsel (Gramm):</label>
-            <input type="number" id="wastePerColorChange" min="0" step="0.1" value="1">
-        </div>
-        <div class="form-group">
-            <label for="powerCost">Stromkosten pro kWh (€):</label>
-            <input type="number" id="powerCost" min="0" step="0.01" value="0.35">
-        </div>
-        <div class="form-group">
-            <label for="discount">Rabatt für Freunde/Verwandte (%):</label>
-            <input type="number" id="discount" min="0" max="100" step="1" value="0">
-        </div>
-        <div class="form-group">
-            <label for="profitMargin">Gewinnmarge (%):</label>
-            <input type="number" id="profitMargin" min="0" step="1" value="100">
-        </div>
-        <div class="form-group">
-            <label for="packaging">Verpackung und Versand (€):</label>
-            <input type="number" id="packaging" min="0" step="0.01" value="0">
-        </div>
-        <div class="form-group">
-            <label for="maintenanceCost">Wartungskosten pro Stunde (€):</label>
-            <input type="number" id="maintenanceCost" min="0" step="0.01" value="0.20">
-        </div>
-        <button type="button" onclick="calculatePrice()">Berechnen</button>
-    </form>
-    <div id="result" class="result" style="display: none;"></div>
-</div>
-<script>
-    function calculatePrice() {
-        const printTimeHours = parseFloat(document.getElementById('printTimeHours').value) || 0;
-        const printTimeMinutes = parseFloat(document.getElementById('printTimeMinutes').value) || 0;
-        const filamentUsed = parseFloat(document.getElementById('filamentUsed').value);
-        const colorChanges = parseInt(document.getElementById('colorChanges').value) || 0;
-        const wastePerColorChange = parseFloat(document.getElementById('wastePerColorChange').value) || 0;
-        const powerCost = parseFloat(document.getElementById('powerCost').value) || 0.40;
-        const discount = parseFloat(document.getElementById('discount').value) || 0;
-        const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
-        const packaging = parseFloat(document.getElementById('packaging').value) || 0;
-        const maintenanceCost = parseFloat(document.getElementById('maintenanceCost').value) || 0;
-
-        // Fixe Kosten
-        const filamentCostPerKg = 11;
-        const printerCost = 650;
-        const printerLifespanHours = 2000;
-
-        // Druckzeit in Stunden berechnen
-        const printTime = printTimeHours + (printTimeMinutes / 60);
-
-        // Abfall durch Farbwechsel berechnen
-        const wasteFilament = colorChanges * wastePerColorChange;
-
-        // Berechnungen
-        const filamentCost = (filamentCostPerKg / 1000) * (filamentUsed + wasteFilament);
-        const powerCostTotal = (0.13 * printTime) * powerCost;
-        const printerWearCost = (printerCost / printerLifespanHours) * printTime;
-        const totalMaintenanceCost = maintenanceCost * printTime;
-
-        const totalCost = filamentCost + powerCostTotal + printerWearCost + totalMaintenanceCost + packaging;
-        const totalWithMargin = totalCost * (1 + profitMargin / 100);
-        const discountedPrice = totalWithMargin * (1 - discount / 100);
-
-        // Ergebnis anzeigen
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('result').innerHTML = `
-            <strong>Berechnungsergebnisse:</strong><br>
-            Gesamtkosten: ${totalCost.toFixed(2)} €<br>
-            Verkaufspreis (mit Gewinnmarge): ${totalWithMargin.toFixed(2)} €<br>
-            Verkaufspreis (mit Rabatt): ${discountedPrice.toFixed(2)} €<br>
-            Farbwechselabfall: ${wasteFilament.toFixed(2)} g
-        `;
+  <h1>3D Druck Preisrechner</h1>
+  <form id="preisForm">
+    <!-- Basispreis pro Druckplatte -->
+    <label for="basisPreis">Basispreis pro Druck (in €):</label>
+    <input type="number" id="basisPreis" name="basisPreis" value="100" step="0.01" min="0">
+    
+    <!-- Anzahl Druckplatten -->
+    <label for="druckplatten">Anzahl Druckplatten:</label>
+    <input type="number" id="druckplatten" name="druckplatten" value="1" min="1">
+    
+    <!-- Druckzeit -->
+    <label for="druckzeit">Druckzeit pro Platte (in Minuten):</label>
+    <input type="number" id="druckzeit" name="druckzeit" value="60" min="0">
+    
+    <!-- Filamentverbrauch -->
+    <label for="filamentGramm">Filamentverbrauch pro Platte (in Gramm):</label>
+    <input type="number" id="filamentGramm" name="filamentGramm" value="50" min="0">
+    
+    <!-- Farbwechsel -->
+    <label for="farbwechsel">Anzahl Farbwechsel pro Platte:</label>
+    <input type="number" id="farbwechsel" name="farbwechsel" value="0" min="0">
+    
+    <!-- Zusatzpreise -->
+    <h2>Kostenfaktoren</h2>
+    <label for="preisProMinute">Preis pro Minute Druckzeit (in €):</label>
+    <input type="number" id="preisProMinute" name="preisProMinute" value="0.05" step="0.01" min="0">
+    
+    <label for="preisProGramm">Preis pro Gramm Filament (in €):</label>
+    <input type="number" id="preisProGramm" name="preisProGramm" value="0.10" step="0.01" min="0">
+    
+    <label for="preisProFarbwechsel">Preis pro Farbwechsel (in €):</label>
+    <input type="number" id="preisProFarbwechsel" name="preisProFarbwechsel" value="2" step="0.01" min="0">
+    
+    <!-- Button zur Preisberechnung -->
+    <button type="button" id="berechneBtn">Preis berechnen</button>
+  </form>
+  
+  <!-- Anzeige des berechneten Gesamtpreises -->
+  <p id="preisAnzeige"></p>
+  
+  <script>
+    // Funktion zur Berechnung des Gesamtpreises
+    function berechnePreis() {
+      const basisPreis = parseFloat(document.getElementById('basisPreis').value);
+      const anzahlPlatten = parseInt(document.getElementById('druckplatten').value, 10);
+      const druckzeit = parseFloat(document.getElementById('druckzeit').value);
+      const filamentGramm = parseFloat(document.getElementById('filamentGramm').value);
+      const farbwechsel = parseInt(document.getElementById('farbwechsel').value, 10);
+      
+      const preisProMinute = parseFloat(document.getElementById('preisProMinute').value);
+      const preisProGramm = parseFloat(document.getElementById('preisProGramm').value);
+      const preisProFarbwechsel = parseFloat(document.getElementById('preisProFarbwechsel').value);
+      
+      // Eingabevalidierung
+      if (isNaN(basisPreis) || basisPreis < 0) {
+        document.getElementById('preisAnzeige').textContent = 'Bitte geben Sie einen gültigen Basispreis ein.';
+        return;
+      }
+      if (isNaN(anzahlPlatten) || anzahlPlatten < 1) {
+        document.getElementById('preisAnzeige').textContent = 'Bitte geben Sie eine gültige Anzahl Druckplatten ein.';
+        return;
+      }
+      
+      // Berechnung der Zusatzkosten pro Platte
+      const kostenDruckzeit = druckzeit * preisProMinute;
+      const kostenFilament = filamentGramm * preisProGramm;
+      const kostenFarbwechsel = farbwechsel * preisProFarbwechsel;
+      
+      // Gesamtkosten pro Platte
+      const kostenProPlatte = basisPreis + kostenDruckzeit + kostenFilament + kostenFarbwechsel;
+      
+      // Gesamtkosten aller Platten
+      const gesamtPreis = kostenProPlatte * anzahlPlatten;
+      
+      document.getElementById('preisAnzeige').textContent = 'Gesamtpreis: ' + gesamtPreis.toFixed(2) + ' €';
     }
-</script>
+    
+    // Event Listener zur Ausführung der Berechnung beim Klick auf den Button
+    document.getElementById('berechneBtn').addEventListener('click', berechnePreis);
+  </script>
 </body>
 </html>
